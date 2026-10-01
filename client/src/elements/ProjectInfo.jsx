@@ -1,4 +1,3 @@
-```jsx
 import React, { Component } from "react";
 
 class ProjectInfo extends Component {
@@ -14,4 +13,3 @@ class ProjectInfo extends Component {
 }
 
 export default ProjectInfo;
-```
