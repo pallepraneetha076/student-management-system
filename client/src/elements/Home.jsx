@@ -1,66 +1,130 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import StudentInfo from "./StudentInfo";
 
 function Home() {
-    const [data, setData] = useState([])
-    const [deleted, setDeleted] = useState(true)
-    useEffect(()=>{
-        if(deleted){
-            setDeleted(false)
-        axios.get('/students')
-        .then((res)=>{
-            setData(res.data)
-        })
-        .catch((err)=>console.log(err))
-    }
-    }, [deleted])
+  const [data, setData] = useState([]);
+  const [deleted, setDeleted] = useState(true);
+  const [search, setSearch] = useState("");
 
-    function handleDelete(id){
-        axios.delete(`/delete/${id}`)
-        .then((res)=>{
-            setDeleted(true)
+  useEffect(() => {
+    if (deleted) {
+      setDeleted(false);
+
+      axios
+        .get("/students")
+        .then((res) => {
+          setData(res.data);
         })
-        .catch((err)=> console.log(err))
+        .catch((err) => console.log(err));
     }
+  }, [deleted]);
+
+  function handleDelete(id) {
+    if (window.confirm("Delete this student?")) {
+      axios
+        .delete(`/delete/${id}`)
+        .then(() => {
+          setDeleted(true);
+        })
+        .catch((err) => console.log(err));
+    }
+  }
+
+  const filteredStudents = data.filter((student) =>
+    student.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className='container-fluid bg-primary vh-100 vw-100'>
-        <h3>Students</h3>
-        <div className='d-flex justify-content-end'>
-            <Link className='btn btn-success' to='/create'>Add Student</Link>
+    <div className="container-fluid bg-light min-vh-100 p-4">
+      <div className="container">
+
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2>Student Management System</h2>
+
+          <Link className="btn btn-success" to="/create">
+            + Add Student
+          </Link>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Age</th>
-                    <th>Gender</th>
-                    <th>Actions</th>
-                </tr>
+
+        <StudentInfo totalStudents={data.length} />
+
+        <div className="card p-3 mb-4 shadow-sm">
+          <label className="form-label">Search Student</label>
+
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by student name"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="table-responsive">
+          <table className="table table-bordered table-striped table-hover">
+
+            <thead className="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Actions</th>
+              </tr>
             </thead>
+
             <tbody>
-                {
-                    data.map((student)=>{
-                        return (<tr>
-                            <td>{student.id}</td>
-                            <td>{student.name}</td>
-                            <td>{student.email}</td>
-                            <td>{student.age}</td>
-                            <td>{student.gender}</td>
-                            <td>
-                                <Link className='btn mx-2 btn-success' to={`/read/${student.id}`}>Read</Link>
-                                <Link className='btn mx-2 btn-success' to={`/edit/${student.id}`}>Edit</Link>
-                                <button onClick={()=>handleDelete(student.id)} className='btn mx-2 btn-danger'>Delete</button>
-                            </td>
-                        </tr>)
-                    })
-                }
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                  <tr key={student.id}>
+                    <td>{student.id}</td>
+                    <td>{student.name}</td>
+                    <td>{student.email}</td>
+                    <td>{student.age}</td>
+                    <td>{student.gender}</td>
+
+                    <td>
+                      <Link
+                        className="btn btn-info btn-sm mx-1"
+                        to={`/read/${student.id}`}
+                      >
+                        Read
+                      </Link>
+
+                      <Link
+                        className="btn btn-warning btn-sm mx-1"
+                        to={`/edit/${student.id}`}
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={() => handleDelete(student.id)}
+                        className="btn btn-danger btn-sm mx-1"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="text-center">
+                    No students found
+                  </td>
+                </tr>
+              )}
             </tbody>
-        </table>
+
+          </table>
+        </div>
+
+      </div>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;
